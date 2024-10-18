@@ -1,6 +1,6 @@
 {
-  "name": "Extension name",
-  "description": "Extension description",
+  "name": "Hackatime",
+  "description": "The official Hackclub Hackatime extension to track code on waka.hackclub.com",
   "version": "0.1.0",
   "manifest_version": 3,
   "icons": {
@@ -10,7 +10,7 @@
     "128": "icons/128.png"
   },
   "action": {
-    "default_title": "Extension action title",
+    "default_title": "Hackatime",
     "default_popup": "popup/index.html"
   },
   "options_page": "options/index.html",

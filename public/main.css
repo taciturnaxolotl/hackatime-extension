@@ -1,3 +1,84 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+html {
+    font-size: xx-large;
+}
+
+/* Base definition */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: Superclarendon, "Bookman Old Style", "URW Bookman",
+    "URW Bookman L", "Georgia Pro", Georgia, serif;
+}
+
+body {
+  font-family: ui-rounded, "Hiragino Maru Gothic ProN", Quicksand, Comfortaa,
+    Manjari, "Arial Rounded MT", "Arial Rounded MT Bold", Calibri,
+    source-sans-pro, sans-serif;
+}
+
+h1 {
+  @apply text-4xl font-semibold antialiased mb-1 leading-snug;
+}
+
+h2 {
+  @apply text-3xl font-semibold antialiased mb-1 leading-snug;
+}
+
+h3 {
+  @apply text-2xl font-semibold antialiased mb-1 leading-snug;
+}
+
+h4 {
+  @apply text-xl font-semibold antialiased mb-1 leading-snug;
+}
+
+h5 {
+  @apply text-lg font-semibold antialiased mb-1 leading-snug;
+}
+
+p {
+    @apply text-base text-text-primary dark:text-text-dark-primary; 
+}
+
+[data-icon] {
+  @apply inline;
+}
+
+a {
+  @apply font-semibold text-text-primary dark:text-text-dark-primary hover:text-accent-secondary dark:hover:text-accent-primary;
+}
+
+.btn-default {
+  @apply py-2 px-4 font-semibold rounded bg-accent-primary dark:bg-accent-dark-primary hover:bg-accent-secondary hover:dark:bg-accent-dark-secondary text-sm;
+}
+
+.btn-disabled {
+  @apply py-2 px-4 font-semibold rounded bg-gray-800 text-gray-600 text-sm;
+}
+
+.btn-primary {
+  @apply py-2 px-4 font-semibold rounded bg-primary hover:bg-primary-dark text-sm;
+}
+
+.btn-danger {
+  @apply py-2 px-4 font-semibold rounded bg-red-600 hover:bg-red-700 text-sm;
+}
+
+.input-default {
+  @apply appearance-none bg-secondary-primary dark:bg-secondary-dark-primary focus:bg-secondary-secondary focus:dark:bg-secondary-dark-secondary text-text-primary dark:text-text-dark-primary placeholder-text-secondary dark:placeholder-text-dark-secondary outline-none rounded w-full py-2 px-4;
+}
+
+.select-default {
+  @apply input-default cursor-pointer;
+}
+
+.inline-code {
+  @apply bg-secondary-secondary dark:bg-secondary-dark-secondary px-1 rounded-lg italic
+}

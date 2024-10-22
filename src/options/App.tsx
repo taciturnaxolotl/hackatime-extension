@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useChromeStorageLocal } from "use-chrome-storage";
 
 const App = () => (
   <div className="flex flex-col items-center">
@@ -13,20 +14,13 @@ const App = () => (
 );
 
 const TokenForm = () => {
-  const [token, setToken] = useState("");
+  const [token, setToken] = useChromeStorageLocal('token', "");
   const [message, setMessage] = useState("");
   const [animate, setAnimate] = useState(false);
 
-  useEffect(() => {
-    const savedToken = localStorage.getItem("hackatimeToken");
-    if (savedToken) {
-      setToken(savedToken);
-    }
-  }, []);
-
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    localStorage.setItem("hackatimeToken", token);
+    setToken(token);
     setMessage("Token saved!");
     setAnimate(true);
     setTimeout(() => setAnimate(false), 200); // Reset animation after 300ms

@@ -58,14 +58,14 @@ function handleTabUpdate(url: string | undefined) {
 		chrome.storage.local.get("token", (result) => {
 			console.log(result);
 			cachedToken = result.token || null;
-			updateIcon(url);
+			updateIcon(url, false);
 		});
 	} else {
 		updateIcon(url);
 	}
 }
 
-function updateIcon(url: string | undefined) {
+function updateIcon(url: string | undefined, override?: boolean) {
 	const isWhitelisted = whitelist.some((whitelistUrl) =>
 		url?.startsWith(whitelistUrl),
 	);
@@ -75,8 +75,36 @@ function updateIcon(url: string | undefined) {
 			: "icons/gray.png"
 		: "icons/gray.png";
 
-	if (iconPath !== cachedIconPath) {
+	if (iconPath !== cachedIconPath || override) {
 		chrome.action.setIcon({ path: iconPath });
 		cachedIconPath = iconPath;
+		updateHoverText(isWhitelisted);
+	}
+}
+
+function updateHoverText(isWhitelisted: boolean) {
+	if (cachedToken === null) {
+		chrome.storage.local.set({
+			status: {
+				message: "Please enter your token in options",
+				status: false,
+			},
+		});
+	} else {
+		if (isWhitelisted) {
+			chrome.storage.local.set({
+				status: {
+					message: "This is an allowed website! Tracking your time",
+					status: true,
+				},
+			});
+		} else {
+			chrome.storage.local.set({
+				status: {
+					message: "This is not an allowed website! Not tracking your time",
+					status: false,
+				},
+			});
+		}
 	}
 }

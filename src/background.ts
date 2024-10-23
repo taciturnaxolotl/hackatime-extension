@@ -7,7 +7,10 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
 	}
 });
 
-const whitelist = ["https://www.google.com"];
+const whitelist = [
+	"https://sprig.hackclub.com/editor",
+	"https://blot.hackclub.com/editor",
+];
 let cachedToken: string | null = null;
 let cachedIconPath: string | null = null;
 

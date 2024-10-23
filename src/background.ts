@@ -7,23 +7,73 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
 	}
 });
 
-// listen to the current tab
+const whitelist = ["https://www.google.com"];
+let cachedToken: string | null = null;
+let cachedIconPath: string | null = null;
+
+// Invalidate the cache every 30 seconds
+setInterval(() => {
+	cachedToken = null;
+}, 30000);
+
+// invalidate the icon cache every 5 minutes
+setInterval(() => {
+	cachedIconPath = null;
+}, 300000);
+
+// listen to the current tab activation
 chrome.tabs.onActivated.addListener((activeInfo) => {
 	chrome.tabs.get(activeInfo.tabId, (tab) => {
-		console.log({ status: tab.status, title: tab.title, url: tab.url });
+		console.log({
+			trigger: "activate",
+			status: tab.status,
+			title: tab.title,
+			url: tab.url,
+		});
+		handleTabUpdate(tab.url);
 	});
+});
 
-	chrome.storage.local.get("token", (result) => {
-		// if token.token doesn't exist then gray the icon
-		console.log(result);
-		if (!result.token) {
-			chrome.action.setIcon({
-				path: "icons/gray.png",
+// listen to navigation events
+chrome.webNavigation.onCompleted.addListener((details) => {
+	chrome.tabs.get(details.tabId, (tab) => {
+		// ignore the newtab page
+		if (tab.url !== "chrome://newtab/") {
+			console.log({
+				trigger: "navigate",
+				status: tab.status,
+				title: tab.title,
+				url: tab.url,
 			});
-		} else {
-			chrome.action.setIcon({
-				path: "icons/128.png",
-			});
+			handleTabUpdate(tab.url);
 		}
 	});
 });
+
+function handleTabUpdate(url: string | undefined) {
+	if (cachedToken === null) {
+		chrome.storage.local.get("token", (result) => {
+			console.log(result);
+			cachedToken = result.token || null;
+			updateIcon(url);
+		});
+	} else {
+		updateIcon(url);
+	}
+}
+
+function updateIcon(url: string | undefined) {
+	const isWhitelisted = whitelist.some((whitelistUrl) =>
+		url?.startsWith(whitelistUrl),
+	);
+	const iconPath = cachedToken
+		? isWhitelisted
+			? "icons/128.png"
+			: "icons/gray.png"
+		: "icons/gray.png";
+
+	if (iconPath !== cachedIconPath) {
+		chrome.action.setIcon({ path: iconPath });
+		cachedIconPath = iconPath;
+	}
+}

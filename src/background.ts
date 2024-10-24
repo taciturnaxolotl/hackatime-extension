@@ -60,7 +60,7 @@ const timePerTab = new Map<
 const heartbeatInterval = 30000; // 3 minutes interval
 const inactiveTime = heartbeatInterval / 2; // 2 minutes inactivity threshold
 
-let isInactive = false; // Initial state
+let isInactive = true; // Initial state
 // store the state so we can figure out what percentage of time the user was active
 const activityChangeMap = new Map<number, boolean>();
 
@@ -214,6 +214,8 @@ setInterval(() => {
 				id: tab.id,
 				ts: new Date(),
 			};
+
+			activityChangeMap.clear();
 
 			timePerTab.set(tab.id, {
 				time: 0,

@@ -1,4 +1,4 @@
-import { getPartialHeartbeat } from "./utils/filtering";
+import { getPartialHeartbeat, whitelist } from "./utils/filtering";
 import { sendHeartbeat } from "./utils/hackatime";
 import { handleTabUpdate } from "./utils/icon";
 
@@ -134,35 +134,46 @@ setInterval(() => {
 				focusTime += timeSpent;
 			}
 
-			// get largest amount of time tab
-			const tabId = Array.from(timePerTab.keys()).reduce((a, b) =>
-				(timePerTab.get(a)?.time || 0) > (timePerTab.get(b)?.time || 0) ? a : b,
+			// filter to be only whitelisted tabs
+			const filteredTabs = Array.from(timePerTab.entries()).filter(([_, tab]) =>
+				whitelist.some((item) => tab.url.startsWith(item.url)),
 			);
 
-			console.log(focusTime);
+			if (filteredTabs.length !== 0) {
+				// get largest amount of time tab
+				const tabId = Array.from(timePerTab.keys()).reduce((a, b) =>
+					(timePerTab.get(a)?.time || 0) > (timePerTab.get(b)?.time || 0)
+						? a
+						: b,
+				);
 
-			// check if the user has been inactive for 2 minutes
-			if (focusTime > inactiveTime) {
-				const partialHB = await getPartialHeartbeat(tabId);
-				console.log("Partial heartbeat", partialHB);
+				console.log(focusTime);
 
-				if (partialHB) {
-					if (cache.cachedToken) {
-						await sendHeartbeat(partialHB, cache.cachedToken);
-					} else {
-						// get the token
-						chrome.storage.local.get("token", async (data) => {
-							cache.cachedToken = data.token;
-							if (cache.cachedToken) {
-								await sendHeartbeat(partialHB, cache.cachedToken);
-							} else {
-								console.log("Token not found");
-							}
-						});
+				// check if the user has been inactive for 2 minutes
+				if (focusTime > inactiveTime) {
+					const partialHB = await getPartialHeartbeat(tabId);
+					console.log("Partial heartbeat", partialHB);
+
+					if (partialHB) {
+						if (cache.cachedToken) {
+							await sendHeartbeat(partialHB, cache.cachedToken);
+						} else {
+							// get the token
+							chrome.storage.local.get("token", async (data) => {
+								cache.cachedToken = data.token;
+								if (cache.cachedToken) {
+									await sendHeartbeat(partialHB, cache.cachedToken);
+								} else {
+									console.log("Token not found");
+								}
+							});
+						}
 					}
+				} else {
+					console.log("User inactive", focusTime, "<", inactiveTime);
 				}
 			} else {
-				console.log("User inactive", focusTime, "<", inactiveTime);
+				console.log("No allowed tabs");
 			}
 
 			// Clear the time per tab after heartbeat
@@ -170,11 +181,11 @@ setInterval(() => {
 
 			// set current tab as last tab and add it to the map
 			lastTab = {
-				id: tabId,
+				id: tab.id,
 				ts: new Date(),
 			};
 
-			timePerTab.set(tabId, {
+			timePerTab.set(tab.id, {
 				time: 0,
 				url: tab.url || "",
 				title: tab.title || "",

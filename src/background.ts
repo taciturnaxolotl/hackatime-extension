@@ -1,3 +1,4 @@
+import { getPartialHeartbeat } from "./utils/filtering";
 import { handleTabUpdate } from "./utils/icon";
 
 // open the options page on install
@@ -84,7 +85,7 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 
 setInterval(() => {
 	if (!lastTab) return;
-	chrome.tabs.get(lastTab.id, (tab) => {
+	chrome.tabs.get(lastTab.id, async (tab) => {
 		if (tab?.id && lastTab) {
 			const timeSpent = Date.now() - lastTab.ts.getTime();
 			const lastTabFull = timePerTab.get(lastTab.id);
@@ -106,6 +107,8 @@ setInterval(() => {
 
 			const hbTab = timePerTab.get(tabId);
 			console.log("Heartbeat", hbTab);
+			const partialHB = await getPartialHeartbeat(tabId);
+			console.log("Partial heartbeat", partialHB);
 
 			// Clear the time per tab after heartbeat
 			timePerTab.clear();

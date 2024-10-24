@@ -8,7 +8,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 		);
 
 		if (lineCount?.textContent && name?.textContent) {
-			console.log(lineCount.textContent);
 			// respond with line count of active line
 			sendResponse({
 				lineCount: Number.parseInt(lineCount.textContent),
@@ -21,7 +20,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 		);
 
 		if (lineCount?.textContent) {
-			console.log(lineCount.textContent);
 			// respond with line count of active line
 			sendResponse({
 				lineCount: Number.parseInt(lineCount.textContent),
@@ -36,7 +34,6 @@ const INACTIVITY_LIMIT = 30 * 1000; // 30 seconds in milliseconds
 
 // Function to notify background script about inactivity
 function onInactivity() {
-	console.log("User inactive for too long!");
 	chrome.runtime.sendMessage({ action: "setInactive", inactive: true });
 }
 

@@ -57,8 +57,8 @@ const timePerTab = new Map<
 	number,
 	{ time: number; url: string; title: string }
 >();
-const heartbeatInterval = 30000; // 3 minutes interval
-const inactiveTime = heartbeatInterval / 2; // 2 minutes inactivity threshold
+const heartbeatInterval = 3 * 60 * 1000; // 3 minutes in milliseconds
+const inactiveTabTime = heartbeatInterval / 2; // 2 minutes inactivity threshold
 
 let isInactive = true; // Initial state
 // store the state so we can figure out what percentage of time the user was active
@@ -171,7 +171,7 @@ setInterval(() => {
 				);
 
 				// check if the user has been inactive for 2 minutes
-				if (tabData.time > inactiveTime) {
+				if (tabData.time > inactiveTabTime) {
 					if (inactivePercentage < 50) {
 						const partialHB = await getPartialHeartbeat(tabId);
 						console.log("Partial heartbeat", partialHB);
@@ -199,7 +199,7 @@ setInterval(() => {
 						"Tab inactive",
 						tabData.time,
 						"< inactiveTime",
-						inactiveTime,
+						inactiveTabTime,
 					);
 				}
 			} else {

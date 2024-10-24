@@ -52,9 +52,6 @@ chrome.webNavigation.onCompleted.addListener((details) => {
 });
 
 let lastTab: { id: number; ts: Date } | null = null;
-let startTime = Date.now();
-let lastFocus: { id: number; ts: Date } | null = null;
-let focusTime = 0;
 
 const timePerTab = new Map<
 	number,
@@ -141,20 +138,6 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 	});
 });
 
-chrome.windows.onFocusChanged.addListener((windowId) => {
-	if (lastFocus && lastFocus.id !== chrome.windows.WINDOW_ID_NONE) {
-		const timeSpent = Date.now() - lastFocus.ts.getTime();
-		focusTime += timeSpent;
-	}
-
-	lastFocus = {
-		id: windowId,
-		ts: new Date(),
-	};
-
-	console.log("Focus changed", focusTime, lastFocus, windowId);
-});
-
 setInterval(() => {
 	if (!lastTab) return;
 	chrome.tabs.get(lastTab.id, async (tab) => {
@@ -172,17 +155,6 @@ setInterval(() => {
 				ts: new Date(),
 			};
 
-			// in the case that no focus events have changed make sure that focus time is correct
-			if (lastFocus) {
-				if (lastFocus.id !== chrome.windows.WINDOW_ID_NONE) {
-					const timeSpent = Date.now() - lastFocus.ts.getTime();
-					focusTime += timeSpent;
-				}
-			} else {
-				const timeSpent = Date.now() - startTime;
-				focusTime += timeSpent;
-			}
-
 			// filter to be only whitelisted tabs
 			const filteredTabs = Array.from(timePerTab.entries()).filter(([_, tab]) =>
 				whitelist.some((item) => tab.url.startsWith(item.url)),
@@ -198,51 +170,35 @@ setInterval(() => {
 					a[1].time > b[1].time ? a : b,
 				);
 
-				console.log(focusTime);
-
 				// check if the user has been inactive for 2 minutes
-				if (focusTime > inactiveTime) {
-					if (tabData.time > inactiveTime) {
-						if (inactivePercentage < 50) {
-							const partialHB = await getPartialHeartbeat(tabId);
-							console.log("Partial heartbeat", partialHB);
+				if (tabData.time > inactiveTime) {
+					if (inactivePercentage < 50) {
+						const partialHB = await getPartialHeartbeat(tabId);
+						console.log("Partial heartbeat", partialHB);
 
-							if (partialHB) {
-								if (cache.cachedToken) {
-									await sendHeartbeat(partialHB, cache.cachedToken);
-								} else {
-									// get the token
-									chrome.storage.local.get("token", async (data) => {
-										cache.cachedToken = data.token;
-										if (cache.cachedToken) {
-											await sendHeartbeat(partialHB, cache.cachedToken);
-										} else {
-											console.log("Token not found");
-										}
-									});
-								}
+						if (partialHB) {
+							if (cache.cachedToken) {
+								await sendHeartbeat(partialHB, cache.cachedToken);
+							} else {
+								// get the token
+								chrome.storage.local.get("token", async (data) => {
+									cache.cachedToken = data.token;
+									if (cache.cachedToken) {
+										await sendHeartbeat(partialHB, cache.cachedToken);
+									} else {
+										console.log("Token not found");
+									}
+								});
 							}
-						} else {
-							console.log(
-								"User inactive for too long",
-								inactivePercentage,
-								"%",
-							);
 						}
 					} else {
-						console.log(
-							"Tab inactive",
-							tabData.time,
-							"< inactiveTime",
-							inactiveTime,
-						);
+						console.log("User inactive for too long", inactivePercentage, "%");
 					}
 				} else {
 					console.log(
-						"User inactive",
-						"focusTime:",
-						focusTime,
-						"< inactiveTime:",
+						"Tab inactive",
+						tabData.time,
+						"< inactiveTime",
 						inactiveTime,
 					);
 				}
@@ -264,9 +220,6 @@ setInterval(() => {
 				url: tab.url || "",
 				title: tab.title || "",
 			});
-
-			startTime = Date.now();
-			focusTime = 0;
 		}
 	});
 }, heartbeatInterval);

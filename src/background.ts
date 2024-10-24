@@ -18,6 +18,11 @@ const cache: {
 	cachedToken: null,
 };
 
+// populate cache
+chrome.storage.local.get("token", (data) => {
+	cache.cachedToken = data.token;
+});
+
 // Invalidate the cache every 30 seconds
 setInterval(() => {
 	cache.cachedToken = null;

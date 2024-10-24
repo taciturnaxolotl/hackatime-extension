@@ -55,12 +55,61 @@ let lastTab: { id: number; ts: Date } | null = null;
 let startTime = Date.now();
 let lastFocus: { id: number; ts: Date } | null = null;
 let focusTime = 0;
+
 const timePerTab = new Map<
 	number,
 	{ time: number; url: string; title: string }
 >();
 const heartbeatInterval = 30000; // 3 minutes interval
 const inactiveTime = heartbeatInterval / 2; // 2 minutes inactivity threshold
+
+let isInactive = false; // Initial state
+// store the state so we can figure out what percentage of time the user was active
+const activityChangeMap = new Map<number, boolean>();
+
+// Listener to handle messages from content script
+chrome.runtime.onMessage.addListener((request) => {
+	if (request.action === "setInactive" && isInactive !== request.inactive) {
+		isInactive = request.inactive;
+
+		// Store the state change with a timestamp
+		activityChangeMap.set(Date.now(), isInactive);
+
+		// You can also take action if the user goes inactive or becomes active again
+		if (isInactive) {
+			console.log("User is now inactive.");
+		} else {
+			console.log("User is active.");
+		}
+	}
+});
+
+// Function to calculate the percentage of inactive time
+function calculateInactivePercentage() {
+	const entries = Array.from(activityChangeMap.entries());
+	if (entries.length === 0) return 0;
+
+	let inactiveTime = 0;
+	let lastTimestamp = entries[0][0];
+	let lastState = entries[0][1];
+
+	for (let i = 1; i < entries.length; i++) {
+		const [timestamp, state] = entries[i];
+		if (lastState) {
+			inactiveTime += timestamp - lastTimestamp;
+		}
+		lastTimestamp = timestamp;
+		lastState = state;
+	}
+
+	// If the last state is inactive, add the time until now
+	if (lastState) {
+		inactiveTime += Date.now() - lastTimestamp;
+	}
+
+	const totalTime = Date.now() - entries[0][0];
+	return (inactiveTime / totalTime) * 100;
+}
 
 // Listen for tab activation
 chrome.tabs.onActivated.addListener((activeInfo) => {
@@ -141,6 +190,8 @@ setInterval(() => {
 
 			console.log("Filtered tabs", filteredTabs);
 
+			const inactivePercentage = calculateInactivePercentage();
+
 			if (filteredTabs.length !== 0) {
 				// get largest amount of time tab
 				const [tabId, tabData] = Array.from(filteredTabs).reduce((a, b) =>
@@ -150,33 +201,48 @@ setInterval(() => {
 				console.log(focusTime);
 
 				// check if the user has been inactive for 2 minutes
-				if (focusTime > inactiveTime && tabData.time > inactiveTime) {
-					const partialHB = await getPartialHeartbeat(tabId);
-					console.log("Partial heartbeat", partialHB);
+				if (focusTime > inactiveTime) {
+					if (tabData.time > inactiveTime) {
+						if (inactivePercentage < 50) {
+							const partialHB = await getPartialHeartbeat(tabId);
+							console.log("Partial heartbeat", partialHB);
 
-					if (partialHB) {
-						if (cache.cachedToken) {
-							await sendHeartbeat(partialHB, cache.cachedToken);
-						} else {
-							// get the token
-							chrome.storage.local.get("token", async (data) => {
-								cache.cachedToken = data.token;
+							if (partialHB) {
 								if (cache.cachedToken) {
 									await sendHeartbeat(partialHB, cache.cachedToken);
 								} else {
-									console.log("Token not found");
+									// get the token
+									chrome.storage.local.get("token", async (data) => {
+										cache.cachedToken = data.token;
+										if (cache.cachedToken) {
+											await sendHeartbeat(partialHB, cache.cachedToken);
+										} else {
+											console.log("Token not found");
+										}
+									});
 								}
-							});
+							}
+						} else {
+							console.log(
+								"User inactive for too long",
+								inactivePercentage,
+								"%",
+							);
 						}
+					} else {
+						console.log(
+							"Tab inactive",
+							tabData.time,
+							"< inactiveTime",
+							inactiveTime,
+						);
 					}
 				} else {
 					console.log(
 						"User inactive",
 						"focusTime:",
 						focusTime,
-						"or tabTime",
-						tabData.time,
-						"< inactiveTime",
+						"< inactiveTime:",
 						inactiveTime,
 					);
 				}

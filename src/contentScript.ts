@@ -30,3 +30,34 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 		}
 	}
 });
+
+let inactivityTimeout: ReturnType<typeof setTimeout>; // Timeout ID
+const INACTIVITY_LIMIT = 30 * 1000; // 30 seconds in milliseconds
+
+// Function to notify background script about inactivity
+function onInactivity() {
+	console.log("User inactive for too long!");
+	chrome.runtime.sendMessage({ action: "setInactive", inactive: true });
+}
+
+// Function to reset the inactivity timer
+function resetInactivityTimer() {
+	clearTimeout(inactivityTimeout); // Clear the existing timer
+	inactivityTimeout = setTimeout(onInactivity, INACTIVITY_LIMIT); // Start a new timer
+
+	// Notify background script that the user is active
+	chrome.runtime.sendMessage({ action: "setInactive", inactive: false });
+}
+
+// Listen for keystrokes
+document.addEventListener("keydown", () => {
+	resetInactivityTimer(); // Reset inactivity timer on keypress
+});
+
+// Listen for mouse movements
+document.addEventListener("mousemove", () => {
+	resetInactivityTimer(); // Reset inactivity timer on mouse move
+});
+
+// Start the timer initially
+resetInactivityTimer();

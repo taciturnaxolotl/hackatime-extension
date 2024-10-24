@@ -52,7 +52,7 @@ chrome.webNavigation.onCompleted.addListener((details) => {
 });
 
 let lastTab: { id: number; ts: Date } | null = null;
-let startTime = 0;
+let startTime = Date.now();
 let lastFocus: { id: number; ts: Date } | null = null;
 let focusTime = 0;
 const timePerTab = new Map<
@@ -93,17 +93,15 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 });
 
 chrome.windows.onFocusChanged.addListener((windowId) => {
-	if (windowId === chrome.windows.WINDOW_ID_NONE) {
-		if (lastFocus && lastFocus.id !== chrome.windows.WINDOW_ID_NONE) {
-			const timeSpent = Date.now() - lastFocus.ts.getTime();
-			focusTime += timeSpent;
-		}
-	} else {
-		lastFocus = {
-			id: windowId,
-			ts: new Date(),
-		};
+	if (lastFocus && lastFocus.id !== chrome.windows.WINDOW_ID_NONE) {
+		const timeSpent = Date.now() - lastFocus.ts.getTime();
+		focusTime += timeSpent;
 	}
+
+	lastFocus = {
+		id: windowId,
+		ts: new Date(),
+	};
 
 	console.log("Focus changed", focusTime, lastFocus, windowId);
 });
@@ -131,36 +129,17 @@ setInterval(() => {
 					const timeSpent = Date.now() - lastFocus.ts.getTime();
 					focusTime += timeSpent;
 				}
-
-				lastFocus = {
-					id: lastFocus.id,
-					ts: new Date(),
-				};
 			} else {
-				console.log("Focus not found");
-				// check window id and update focus time
-				await new Promise((resolve) => {
-					chrome.windows.getCurrent((window) => {
-						if (window?.id !== chrome.windows.WINDOW_ID_NONE) {
-							const timeSpent = Date.now() - startTime;
-							focusTime += timeSpent;
-						}
-
-						console.log("focustime", focusTime);
-
-						lastFocus = {
-							id: window?.id || chrome.windows.WINDOW_ID_NONE,
-							ts: new Date(),
-						};
-						resolve(null);
-					});
-				});
+				const timeSpent = Date.now() - startTime;
+				focusTime += timeSpent;
 			}
 
 			// get largest amount of time tab
 			const tabId = Array.from(timePerTab.keys()).reduce((a, b) =>
 				(timePerTab.get(a)?.time || 0) > (timePerTab.get(b)?.time || 0) ? a : b,
 			);
+
+			console.log(focusTime);
 
 			// check if the user has been inactive for 2 minutes
 			if (focusTime > inactiveTime) {

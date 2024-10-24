@@ -1,7 +1,4 @@
-const whitelist = [
-	"https://sprig.hackclub.com/editor",
-	"https://blot.hackclub.com/editor",
-];
+import { whitelist } from "./filtering";
 
 export function updateIcon(
 	url: string | undefined,
@@ -11,9 +8,7 @@ export function updateIcon(
 	},
 	override?: boolean,
 ) {
-	const isWhitelisted = whitelist.some((whitelistUrl) =>
-		url?.startsWith(whitelistUrl),
-	);
+	const isWhitelisted = whitelist.some((item) => url?.startsWith(item.url));
 	const iconPath = cache.cachedToken
 		? isWhitelisted
 			? "icons/128.png"
@@ -66,7 +61,6 @@ export function handleTabUpdate(
 ) {
 	if (cache.cachedToken === null) {
 		chrome.storage.local.get("token", (result) => {
-			console.log(result);
 			cache.cachedToken = result.token || null;
 			updateIcon(url, cache, true);
 		});

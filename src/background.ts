@@ -139,18 +139,18 @@ setInterval(() => {
 				whitelist.some((item) => tab.url.startsWith(item.url)),
 			);
 
+			console.log("Filtered tabs", filteredTabs);
+
 			if (filteredTabs.length !== 0) {
 				// get largest amount of time tab
-				const tabId = Array.from(timePerTab.keys()).reduce((a, b) =>
-					(timePerTab.get(a)?.time || 0) > (timePerTab.get(b)?.time || 0)
-						? a
-						: b,
+				const [tabId, tabData] = Array.from(filteredTabs).reduce((a, b) =>
+					a[1].time > b[1].time ? a : b,
 				);
 
 				console.log(focusTime);
 
 				// check if the user has been inactive for 2 minutes
-				if (focusTime > inactiveTime) {
+				if (focusTime > inactiveTime && tabData.time > inactiveTime) {
 					const partialHB = await getPartialHeartbeat(tabId);
 					console.log("Partial heartbeat", partialHB);
 
@@ -170,7 +170,15 @@ setInterval(() => {
 						}
 					}
 				} else {
-					console.log("User inactive", focusTime, "<", inactiveTime);
+					console.log(
+						"User inactive",
+						"focusTime:",
+						focusTime,
+						"or tabTime",
+						tabData.time,
+						"< inactiveTime",
+						inactiveTime,
+					);
 				}
 			} else {
 				console.log("No allowed tabs");

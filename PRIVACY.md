@@ -1,0 +1,3 @@
+# Privacy Policy
+
+We will never sell or share your data with third parties and we will not track or store any website urls, names, or page contents that is not in the list of domains in the [`filtering.ts`](src/utils/filtering.ts) whitelist. On those domains (currentely just `sprig.hackclub.com` and `blot.hackclub.com`) the only data we collect is project name and (if available) line count for the file being edited as well as the url. This data is sent to [Hackatime](https://waka.hackclub.com) (via the api token you provide the extension) and will be stored as heartbeats and are viewable on your Hackatime dashboard. If you have any specific concerns feel free to DM @krn on slack or send an email to [team@hackclub.com](mailto://team@hackclub.com)

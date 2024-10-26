@@ -1,16 +1,14 @@
-# bun-chrome-extension
+# Hackatime Browser Extension
 
-> Develop chrome extension with full TypeScript support using [Bun](https://bun.sh) 🐰 & [React](https://react.dev/)
+![the hackatime extension tracking a blot project](.github/images/hackatime.jpeg)
 
-Bun chrome extension is a starter template for developing chrome-extensions using modern frontend tooling.
+Tracking time for [blot.hackclub.com](https://blot.hackclub.com) and [sprig.hackclub.com](https://sprig.hackclub.com) and more websites soon to come
 
-## What's inside?
-- [x] First-class TypeScript support
-- [x] Background & content scripts
-- [x] Popup & Options page built with React
-- [x] Lint & format with [BiomeJS](https://biomejs.dev/)
-- [x] Latest Manifest v3
-- [x] TailwindCSS
+## Screenshots
+
+![the hackatime extension options page](.github/images/options.jpg)
+
+## Development
 
 Install dependencies:
 

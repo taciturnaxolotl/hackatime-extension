@@ -84,7 +84,7 @@ chrome.runtime.onMessage.addListener((request) => {
 // Function to calculate the percentage of inactive time
 function calculateInactivePercentage() {
 	const entries = Array.from(activityChangeMap.entries());
-	if (entries.length === 0) return 0;
+	if (entries.length === 0) return 100;
 
 	let inactiveTime = 0;
 	let lastTimestamp = entries[0][0];
@@ -222,6 +222,8 @@ setInterval(() => {
 				url: tab.url || "",
 				title: tab.title || "",
 			});
+
+			activityChangeMap.set(Date.now(), false);
 		}
 	});
 }, heartbeatInterval);

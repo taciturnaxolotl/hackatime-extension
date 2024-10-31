@@ -51,7 +51,7 @@ export async function getPartialHeartbeat(
 							: "chrome";
 
 				resolve({
-					branch: "",
+					branch: "web",
 					category: "coding",
 					editor: browserType,
 					language: editor,

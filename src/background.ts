@@ -311,8 +311,6 @@ setInterval(() => {
 				url: tab.url || "",
 				title: tab.title || "",
 			});
-
-			activityChangeMap.set(Date.now(), false);
 		}
 	});
 }, heartbeatInterval);

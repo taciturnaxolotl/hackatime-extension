@@ -249,6 +249,11 @@ setInterval(() => {
 			console.log("Time per tab", Array.from(timePerTab.entries()));
 
 			const inactivePercentage = calculateInactivePercentage();
+			console.log(
+				"Inactive percentage",
+				inactivePercentage,
+				Array.from(activityChangeMap.entries()),
+			);
 
 			if (filteredTabs.length !== 0) {
 				// get largest amount of time tab

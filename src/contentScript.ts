@@ -30,7 +30,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 let inactivityTimeout: ReturnType<typeof setTimeout>; // Timeout ID
-const INACTIVITY_LIMIT = 30 * 1000; // 30 seconds in milliseconds
+const INACTIVITY_LIMIT = 10 * 1000; // 30 seconds in milliseconds
 
 // Function to notify background script about inactivity
 function onInactivity() {

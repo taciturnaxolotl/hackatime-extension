@@ -58,7 +58,7 @@ const timePerTab = new Map<
 	{ time: number; url: string; title: string }
 >();
 const heartbeatInterval = 1 * 60 * 1000; // 1 minute in milliseconds
-const inactiveTabTime = heartbeatInterval / 30; // 2 minutes inactivity threshold
+const inactiveTabTime = 50 * 1000; // 2 minutes inactivity threshold
 
 let isInactive = true; // Initial state
 // store the state so we can figure out what percentage of time the user was active

@@ -86,6 +86,40 @@ chrome.runtime.onMessage.addListener((request, sender) => {
 	}
 });
 
+// listen to window focus changing and get currentely active tab in that window
+chrome.windows.onFocusChanged.addListener((windowId) => {
+	if (windowId === chrome.windows.WINDOW_ID_NONE) {
+		return;
+	}
+
+	chrome.tabs.query({ active: true, windowId }, (tabs) => {
+		if (tabs[0].id) {
+			handleTabUpdate(tabs[0].url, cache);
+			if (lastTab) {
+				if (lastTab.id !== tabs[0].id) {
+					const timeSpent = Date.now() - lastTab.ts.getTime();
+					const lastTabFull = timePerTab.get(lastTab.id);
+					timePerTab.set(lastTab.id, {
+						time: (lastTabFull?.time || 0) + timeSpent,
+						url: lastTabFull?.url || "",
+						title: lastTabFull?.title || "",
+					});
+				}
+			} else {
+				lastTab = {
+					id: tabs[0].id,
+					ts: new Date(),
+				};
+			}
+
+			console.log(
+				"Tab switched via window switch",
+				Array.from(timePerTab.entries()),
+			);
+		}
+	});
+});
+
 // Function to calculate the percentage of inactive time
 function calculateInactivePercentage() {
 	const entries = Array.from(activityChangeMap.entries());

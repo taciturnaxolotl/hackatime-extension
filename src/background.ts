@@ -138,6 +138,47 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 	});
 });
 
+// listen to navigation events
+chrome.webNavigation.onCompleted.addListener((details) => {
+	chrome.tabs.get(details.tabId, (tab) => {
+		// ignore the newtab page
+		if (tab.url !== "chrome://newtab/") {
+			if (lastTab) {
+				const timeSpent = Date.now() - lastTab.ts.getTime();
+				const lastTabFull = timePerTab.get(lastTab.id);
+				timePerTab.set(lastTab.id, {
+					time: (lastTabFull?.time || 0) + timeSpent,
+					url: lastTabFull?.url || "",
+					title: lastTabFull?.title || "",
+				});
+			}
+
+			if (!timePerTab.has(details.tabId)) {
+				timePerTab.set(details.tabId, {
+					time: 0,
+					url: tab.url || "",
+					title: tab.title || "",
+				});
+			}
+
+			lastTab = {
+				id: details.tabId,
+				ts: new Date(),
+			};
+
+			// check if its in the map and if it is update it
+			const tabData = timePerTab.get(details.tabId);
+			if (tabData) {
+				timePerTab.set(details.tabId, {
+					time: tabData.time,
+					url: tab.url || "",
+					title: tab.title || "",
+				});
+			}
+		}
+	});
+});
+
 setInterval(() => {
 	if (!lastTab) return;
 	chrome.tabs.get(lastTab.id, async (tab) => {

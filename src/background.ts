@@ -65,19 +65,24 @@ let isInactive = true; // Initial state
 const activityChangeMap = new Map<number, boolean>();
 
 // Listener to handle messages from content script
-chrome.runtime.onMessage.addListener((request) => {
+chrome.runtime.onMessage.addListener((request, sender) => {
 	if (request.action === "setInactive" && isInactive !== request.inactive) {
-		isInactive = request.inactive;
+		// Check if the message is coming from the focused window
+		chrome.windows.getLastFocused((window) => {
+			if (sender.tab?.windowId === window.id) {
+				isInactive = request.inactive;
 
-		// Store the state change with a timestamp
-		activityChangeMap.set(Date.now(), isInactive);
+				// Store the state change with a timestamp
+				activityChangeMap.set(Date.now(), isInactive);
 
-		// You can also take action if the user goes inactive or becomes active again
-		if (isInactive) {
-			console.log("User is now inactive.");
-		} else {
-			console.log("User is active.");
-		}
+				// You can also take action if the user goes inactive or becomes active again
+				if (isInactive) {
+					console.log("User is now inactive.");
+				} else {
+					console.log("User is active.");
+				}
+			}
+		});
 	}
 });
 
@@ -207,6 +212,7 @@ setInterval(() => {
 			);
 
 			console.log("Filtered tabs", filteredTabs);
+			console.log("Time per tab", Array.from(timePerTab.entries()));
 
 			const inactivePercentage = calculateInactivePercentage();
 

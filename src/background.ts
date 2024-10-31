@@ -302,6 +302,9 @@ setInterval(() => {
 			};
 
 			activityChangeMap.clear();
+			if (isInactive) {
+				activityChangeMap.set(Date.now(), true);
+			}
 
 			timePerTab.set(tab.id, {
 				time: 0,

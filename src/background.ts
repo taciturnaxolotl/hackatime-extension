@@ -151,6 +151,16 @@ chrome.webNavigation.onCompleted.addListener((details) => {
 					url: lastTabFull?.url || "",
 					title: lastTabFull?.title || "",
 				});
+
+				lastTab = {
+					id: details.tabId,
+					ts: lastTab.ts,
+				};
+			} else {
+				lastTab = {
+					id: details.tabId,
+					ts: new Date(),
+				};
 			}
 
 			if (!timePerTab.has(details.tabId)) {
@@ -160,11 +170,6 @@ chrome.webNavigation.onCompleted.addListener((details) => {
 					title: tab.title || "",
 				});
 			}
-
-			lastTab = {
-				id: details.tabId,
-				ts: new Date(),
-			};
 
 			// check if its in the map and if it is update it
 			const tabData = timePerTab.get(details.tabId);

@@ -81,6 +81,11 @@ chrome.runtime.onMessage.addListener((request, sender) => {
 				} else {
 					console.log("User is active.");
 				}
+			} else {
+				console.log(
+					"Message from inactive tab rejected because not current tab. Sender tab:",
+					sender.tab,
+				);
 			}
 		});
 	}

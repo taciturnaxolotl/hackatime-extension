@@ -1,5 +1,8 @@
 # Hackatime Browser Extension
 
+> [!WARNING]
+> DONT USE THIS; its buggy and broken and unsupported  
+
 ![the hackatime extension tracking a blot project](.github/images/hackatime.jpeg)
 
 Tracking time for [blot.hackclub.com](https://blot.hackclub.com) and [sprig.hackclub.com](https://sprig.hackclub.com) and more websites soon to come
